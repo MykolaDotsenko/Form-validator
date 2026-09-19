@@ -11,28 +11,53 @@ const FIELD_NAMES = [
   "passwordConfirmation",
 ];
 
-const form = document.querySelector("#registration-form");
-const summary = document.querySelector("#form-summary");
-const successPanel = document.querySelector("#success-panel");
-const successMessage = document.querySelector("#success-message");
-const passwordToggle = document.querySelector("#password-toggle");
-const startOverButton = document.querySelector("#start-over");
-const strengthLabel = document.querySelector("#password-strength-label");
-const strengthSegments = [...document.querySelectorAll("[data-strength-segment]")];
+function requireElement(selector) {
+  const element = document.querySelector(selector);
 
-if (!form || !summary || !successPanel) {
-  throw new Error("Registration form markup is incomplete.");
+  if (!element) {
+    throw new Error("Required element is missing: " + selector);
+  }
+
+  return element;
+}
+
+const form = requireElement("#registration-form");
+const summary = requireElement("#form-summary");
+const successPanel = requireElement("#success-panel");
+const successMessage = requireElement("#success-message");
+const passwordToggle = requireElement("#password-toggle");
+const startOverButton = requireElement("#start-over");
+const strengthLabel = requireElement("#password-strength-label");
+const strengthSegments = [
+  ...document.querySelectorAll("[data-strength-segment]"),
+];
+
+if (!(form instanceof HTMLFormElement)) {
+  throw new Error("#registration-form must be a form element.");
+}
+
+if (strengthSegments.length !== 4) {
+  throw new Error("Password strength meter must contain exactly four segments.");
 }
 
 const fields = Object.fromEntries(
-  FIELD_NAMES.map((name) => [name, form.elements.namedItem(name)]),
+  FIELD_NAMES.map((name) => {
+    const element = form.elements.namedItem(name);
+
+    if (!(element instanceof HTMLInputElement)) {
+      throw new Error("Required form control is missing: " + name);
+    }
+
+    return [name, element];
+  }),
 );
 
 const touched = new Set();
+let lastStrengthAnnouncement = "not entered";
 
 function readValues() {
   return Object.fromEntries(
-    FIELD_NAMES.map((name) => [name, fields[name]?.value ?? ""]),
+    FIELD_NAMES.map((name) => [name, fields[name].value]),
   );
 }
 
@@ -41,21 +66,24 @@ function errorElementFor(name) {
     name === "passwordConfirmation"
       ? "password-confirmation-error"
       : name + "-error";
-
-  return document.getElementById(id);
+  return requireElement("#" + id);
 }
 
-function fieldContainerFor(name) {
-  return form.querySelector('[data-field="' + name + '"]');
-}
+const errorElements = Object.fromEntries(
+  FIELD_NAMES.map((name) => [name, errorElementFor(name)]),
+);
+
+const fieldContainers = Object.fromEntries(
+  FIELD_NAMES.map((name) => {
+    const element = requireElement('[data-field="' + name + '"]');
+    return [name, element];
+  }),
+);
 
 function renderFieldState(name, error) {
   const input = fields[name];
-  const container = fieldContainerFor(name);
-  const errorElement = errorElementFor(name);
-
-  if (!input || !container || !errorElement) return;
-
+  const container = fieldContainers[name];
+  const errorElement = errorElements[name];
   const hasValue = input.value.length > 0;
   const hasError = Boolean(error);
 
@@ -77,14 +105,17 @@ function validateAndRender(name) {
   return error;
 }
 
-function renderPasswordStrength() {
+function renderPasswordStrength({ forceAnnouncement = false } = {}) {
   const { score, label } = getPasswordStrength(fields.password.value);
 
   strengthSegments.forEach((segment, index) => {
     segment.dataset.active = String(index < score);
   });
 
-  strengthLabel.textContent = "Password strength: " + label;
+  if (forceAnnouncement || label !== lastStrengthAnnouncement) {
+    strengthLabel.textContent = "Password strength: " + label;
+    lastStrengthAnnouncement = label;
+  }
 }
 
 function hideSummary() {
@@ -149,16 +180,18 @@ function handleSubmit(event) {
   if (!result.valid) {
     const invalidNames = FIELD_NAMES.filter((name) => result.errors[name]);
     showSummary(invalidNames.length);
-    fields[invalidNames[0]]?.focus();
+    fields[invalidNames[0]].focus();
     return;
   }
 
   hideSummary();
   form.hidden = true;
   successMessage.textContent =
-    "The demo accepted " + values.email.trim() + ". No data was transmitted or stored.";
+    "The demo accepted " +
+    values.email.trim() +
+    ". No data was transmitted or stored.";
   successPanel.hidden = false;
-  successPanel.focus?.();
+  successPanel.focus();
 }
 
 function handlePasswordToggle() {
@@ -177,29 +210,29 @@ function resetExperience() {
   hideSummary();
 
   FIELD_NAMES.forEach((name) => {
-    const container = fieldContainerFor(name);
-    const errorElement = errorElementFor(name);
-    fields[name]?.removeAttribute("aria-invalid");
-    if (container) delete container.dataset.state;
-    if (errorElement) errorElement.textContent = "";
+    delete fieldContainers[name].dataset.state;
+    errorElements[name].textContent = "";
+    fields[name].removeAttribute("aria-invalid");
   });
 
   fields.password.type = "password";
   fields.passwordConfirmation.type = "password";
   passwordToggle.setAttribute("aria-pressed", "false");
   passwordToggle.textContent = "Show passwords";
-  renderPasswordStrength();
+  lastStrengthAnnouncement = "";
+  renderPasswordStrength({ forceAnnouncement: true });
 
   successPanel.hidden = true;
   form.hidden = false;
-  fields.username?.focus();
+  fields.username.focus();
 }
 
-form.noValidate = true;
 form.addEventListener("input", handleInput);
 form.addEventListener("focusout", handleBlur);
 form.addEventListener("submit", handleSubmit);
 passwordToggle.addEventListener("click", handlePasswordToggle);
 startOverButton.addEventListener("click", resetExperience);
 
+document.documentElement.dataset.enhanced = "true";
+form.noValidate = true;
 renderPasswordStrength();

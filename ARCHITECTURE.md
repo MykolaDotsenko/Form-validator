@@ -176,3 +176,69 @@ If this became a real registration product, the next architectural boundary woul
 - integration/browser tests against the real API
 
 Those capabilities are intentionally outside this client-only case study.
+
+## Enhanced-mode bootstrap safety
+
+Custom validation is enabled only after every required DOM dependency has been resolved.
+
+The startup order is deliberate:
+
+    resolve required elements
+        ↓
+    verify form controls
+        ↓
+    bind interaction handlers
+        ↓
+    mark document enhanced
+        ↓
+    disable native validation
+
+This prevents a partial-bootstrap failure from disabling native browser validation and leaving the form in an unusable middle state.
+
+## Identity normalization
+
+Usernames and email identity comparisons use Unicode NFKC normalization.
+
+This reduces surprising differences between compatibility-equivalent characters while keeping the actual password value untouched.
+
+Password comparison against username/email uses a normalized copy only for the comparison. The application never rewrites, stores, or transmits the password.
+
+## Browser verification
+
+Unit tests cover pure rules. They cannot prove that focus, events, hidden states, responsive behavior, or accessibility wiring work in a real browser.
+
+The browser suite therefore verifies three environments:
+
+- Chromium desktop
+- Firefox desktop
+- Chromium mobile emulation
+
+The E2E suite covers:
+
+- quiet untouched state
+- blur-triggered validation
+- live correction recovery
+- invalid-submit summary and focus
+- dependent password rules
+- password visibility
+- success focus transfer
+- reset behavior
+- responsive presentation
+
+Automated axe analysis runs against initial, invalid, and success states.
+
+Browser failures retain Playwright diagnostics in CI so a regression is inspectable rather than merely reported as red.
+
+## Test-tool dependency policy
+
+The shipped application has zero runtime dependencies.
+
+Browser tooling is intentionally separated from the runtime package surface. CI installs exact pinned versions of Playwright and axe as ephemeral test dependencies.
+
+This preserves two useful properties at once:
+
+1. the application stays dependency-free;
+2. browser and accessibility behavior is still tested with production-grade tooling.
+
+Dependabot monitors the repository's GitHub Actions and npm ecosystem for future maintenance needs.
+

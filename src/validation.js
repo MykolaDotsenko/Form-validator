@@ -1,12 +1,16 @@
-const USERNAME_PATTERN = /^[\p{L}\p{N}._-]+$/u;
+const USERNAME_PATTERN = /^[\p{L}\p{M}\p{N}._-]+$/u;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/u;
 
 function characterCount(value) {
   return Array.from(value).length;
 }
 
+function normalizeIdentity(value) {
+  return value.trim().normalize("NFKC");
+}
+
 export function validateUsername(value) {
-  const username = value.trim();
+  const username = normalizeIdentity(value);
 
   if (!username) return "Enter a username.";
 
@@ -22,7 +26,7 @@ export function validateUsername(value) {
 }
 
 export function validateEmail(value) {
-  const email = value.trim();
+  const email = normalizeIdentity(value);
 
   if (!email) return "Enter an email address.";
   if (email.length > 254) return "Email address is too long.";
@@ -45,8 +49,8 @@ export function validatePassword(value, { username = "", email = "" } = {}) {
     return "Include at least one letter and one number.";
   }
 
-  const normalizedPassword = value.toLocaleLowerCase();
-  const normalizedUsername = username.trim().toLocaleLowerCase();
+  const normalizedPassword = value.normalize("NFKC").toLowerCase();
+  const normalizedUsername = normalizeIdentity(username).toLowerCase();
 
   if (
     normalizedUsername.length >= 3 &&
@@ -55,7 +59,9 @@ export function validatePassword(value, { username = "", email = "" } = {}) {
     return "Password should not contain your username.";
   }
 
-  const emailLocalPart = email.trim().split("@")[0]?.toLocaleLowerCase() ?? "";
+  const emailLocalPart =
+    normalizeIdentity(email).split("@")[0]?.toLowerCase() ?? "";
+
   if (
     emailLocalPart.length >= 3 &&
     normalizedPassword.includes(emailLocalPart)
@@ -117,7 +123,10 @@ export function getPasswordStrength(value) {
   if (characterCount(value) >= 10) score += 1;
   if (characterCount(value) >= 14) score += 1;
   if (/\p{L}/u.test(value) && /\p{N}/u.test(value)) score += 1;
-  if (/[^\p{L}\p{N}\s]/u.test(value) || (/[a-z]/u.test(value) && /[A-Z]/u.test(value))) {
+  if (
+    /[^\p{L}\p{N}\s]/u.test(value) ||
+    (/[a-z]/u.test(value) && /[A-Z]/u.test(value))
+  ) {
     score += 1;
   }
 

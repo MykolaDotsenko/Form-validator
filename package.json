@@ -1,6 +1,6 @@
 {
   "name": "formguard-validation-lab",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "private": true,
   "type": "module",
   "description": "An accessible, dependency-free client-side validation case study.",
@@ -8,7 +8,10 @@
     "test": "node --test tests/*.test.js",
     "check:syntax": "node --check script.js && node --check src/validation.js && node --check scripts/check-project.mjs",
     "check:project": "node scripts/check-project.mjs",
-    "check": "npm run check:syntax && npm test && npm run check:project"
+    "check": "npm run check:syntax && npm test && npm run check:project",
+    "test:e2e:deps": "npm install --no-save --package-lock=false @playwright/test@1.63.0 @axe-core/playwright@4.13.0 @lhci/cli@0.15.1",
+    "test:e2e": "playwright test",
+    "test:lighthouse": "lhci autorun --config=lighthouserc.cjs"
   },
   "engines": {
     "node": ">=22"

@@ -9,6 +9,34 @@
     />
     <meta name="theme-color" content="#111827" />
     <meta name="color-scheme" content="light" />
+    <meta name="application-name" content="FormGuard" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://mykoladotsenko.github.io/Form-validator/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="FormGuard" />
+    <meta property="og:title" content="FormGuard — Accessible validation without friction" />
+    <meta
+      property="og:description"
+      content="A production-minded, dependency-free form validation case study focused on accessibility, resilient UX and proportional frontend architecture."
+    />
+    <meta property="og:url" content="https://mykoladotsenko.github.io/Form-validator/" />
+    <meta
+      property="og:image"
+      content="https://opengraph.githubassets.com/formguard/MykolaDotsenko/Form-validator"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FormGuard — Accessible validation without friction" />
+    <meta
+      name="twitter:description"
+      content="Dependency-free client-side validation with pure domain logic, progressive enhancement, automated tests and WCAG-focused UX."
+    />
+    <meta
+      name="twitter:image"
+      content="https://opengraph.githubassets.com/formguard/MykolaDotsenko/Form-validator"
+    />
+
     <title>FormGuard — Accessible validation</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
@@ -80,6 +108,9 @@
                 type="text"
                 autocomplete="username"
                 inputmode="text"
+                autocapitalize="none"
+                autocorrect="off"
+                spellcheck="false"
                 required
                 minlength="3"
                 maxlength="20"
@@ -89,7 +120,7 @@
               <p id="username-hint" class="field-hint">
                 Letters, numbers, dots, hyphens and underscores.
               </p>
-              <p id="username-error" class="field-error" aria-live="polite"></p>
+              <p id="username-error" class="field-error" aria-live="polite" aria-atomic="true"></p>
             </div>
 
             <div class="field" data-field="email">
@@ -103,6 +134,9 @@
                 type="email"
                 autocomplete="email"
                 inputmode="email"
+                autocapitalize="none"
+                autocorrect="off"
+                spellcheck="false"
                 required
                 maxlength="254"
                 aria-describedby="email-hint email-error"
@@ -111,7 +145,7 @@
               <p id="email-hint" class="field-hint">
                 Used only to demonstrate email validation.
               </p>
-              <p id="email-error" class="field-error" aria-live="polite"></p>
+              <p id="email-error" class="field-error" aria-live="polite" aria-atomic="true"></p>
             </div>
 
             <div class="field" data-field="password">
@@ -148,10 +182,10 @@
                 <span data-strength-segment></span>
                 <span data-strength-segment></span>
               </div>
-              <p id="password-strength-label" class="strength-label" aria-live="polite">
+              <p id="password-strength-label" class="strength-label" aria-live="polite" aria-atomic="true">
                 Password strength: not entered
               </p>
-              <p id="password-error" class="field-error" aria-live="polite"></p>
+              <p id="password-error" class="field-error" aria-live="polite" aria-atomic="true"></p>
             </div>
 
             <div class="field" data-field="passwordConfirmation">

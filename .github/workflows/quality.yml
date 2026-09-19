@@ -14,21 +14,68 @@ concurrency:
 
 jobs:
   quality:
+    name: Static quality
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
-      - name: Install locked toolchain
+      - name: Install locked core toolchain
         run: npm ci --ignore-scripts
 
-      - name: Run quality gates
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Run syntax, unit and architecture checks
         run: npm run check
+
+  browser:
+    name: Browser and accessibility
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install locked core toolchain
+        run: npm ci --ignore-scripts
+
+      - name: Install pinned browser test tooling
+        run: npm run test:e2e:deps
+
+      - name: Install browser engines
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Run cross-browser product and WCAG checks
+        run: npm run test:e2e
+
+      - name: Run Lighthouse quality budgets
+        run: npm run test:lighthouse
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: formguard-browser-evidence
+          path: |
+            playwright-report/
+            test-results/
+            .lighthouseci/
+          if-no-files-found: ignore
+          retention-days: 14
