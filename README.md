@@ -2,103 +2,132 @@
 
 [![Quality](https://github.com/MykolaDotsenko/Form-validator/actions/workflows/quality.yml/badge.svg)](https://github.com/MykolaDotsenko/Form-validator/actions/workflows/quality.yml)
 
-**A dependency-free registration form rebuilt as a compact frontend engineering case study.**
+**A dependency-free registration flow rebuilt as a compact frontend engineering case study.**
 
-FormGuard demonstrates how a small interaction can still deserve clear boundaries, useful validation, accessible feedback, resilient progressive enhancement, and automated verification — without introducing a framework that the product does not need.
+[**Open the live demo →**](https://mykoladotsenko.github.io/Form-validator/) · [Architecture](./ARCHITECTURE.md) · [Browser tests](./e2e/formguard.spec.js)
 
-## What the user can do
+FormGuard shows how a small interaction can still deserve clear boundaries, useful validation, accessible feedback, progressive enhancement, cross-browser verification, and automated quality gates — without introducing a framework the product does not need.
 
-- create a demo registration with username, email and password fields
-- receive validation after leaving a field, without being interrupted on every keystroke
-- see errors update while correcting an already-touched field
-- reveal or hide both password fields
-- get a deterministic password-strength indicator
-- recover quickly from invalid input with focus moved to the first field requiring attention
-- complete a success flow without sending or storing personal data
-- restart the experience without reloading the page
+## Why this project is interesting
 
-## Engineering highlights
+The original repository was a conventional four-field JavaScript exercise.
+
+The current implementation deliberately keeps the same small problem domain while applying production-minded engineering discipline:
 
 - **zero runtime dependencies**
 - pure validation rules isolated from the browser
-- thin DOM adapter responsible only for interaction and rendering
-- Unicode-aware username and password rules
-- pragmatic email validation instead of an unreadable RFC-style expression
-- native HTML constraints retained as a no-JavaScript fallback
-- custom validation enabled only after the JavaScript enhancement boots
-- dependent-field revalidation for password/profile relationships
-- deterministic password-strength scoring
-- explicit error, valid and success states
-- screen-reader announcements with `aria-live`
-- `aria-invalid` kept in sync with the rendered state
-- visible keyboard focus states
-- skip navigation
-- `prefers-reduced-motion` support
-- responsive desktop/mobile layout
-- no network requests, analytics, storage or form submission
-- Node built-in unit tests
-- structural architecture/accessibility checks
-- GitHub Actions quality gate
+- thin DOM and interaction adapter
+- fail-safe progressive enhancement
+- accessible touched-field feedback
+- deterministic password-strength guidance
+- Unicode-aware identity validation
+- unit and boundary tests
+- Playwright end-to-end coverage
+- Chromium desktop, Firefox desktop and Chromium mobile verification
+- automated axe accessibility analysis
+- GitHub Actions quality gates
+- Dependabot maintenance
+- GitHub Pages deployment
 
-## Stack
+The goal is not to make a form look enterprise-sized. It is to show **how to make a small system reliable without making it complicated**.
+
+## Product behavior
+
+1. Enter username, email and password details.
+2. Leave a field to receive contextual validation.
+3. Correct touched fields with immediate recovery feedback.
+4. Submit the form.
+5. Invalid submission focuses the first problem field.
+6. Valid submission moves focus to an accessible success state.
+7. Reset restores a clean form and keyboard focus.
+
+Nothing is transmitted, stored, tracked, or persisted.
+
+## Quality evidence
+
+| Layer | Verification |
+| --- | --- |
+| Pure validation | Node built-in unit tests |
+| Boundary behavior | exact min/max, Unicode normalization, dependent rules |
+| Architecture | structural invariant checker |
+| Browser behavior | Playwright end-to-end flows |
+| Desktop | Chromium + Firefox |
+| Mobile | Chromium mobile emulation |
+| Accessibility | axe analysis of initial, invalid and success states |
+| CI | separate static and browser jobs |
+| Supply chain | zero runtime packages; pinned test tooling |
+| Deployment | GitHub Pages |
+
+Browser failures retain Playwright traces, screenshots, and video where applicable. CI uploads short-lived browser evidence artifacts.
+
+## Runtime stack
 
 - semantic HTML5
 - modern CSS
-- Vanilla JavaScript with native ES modules
+- Vanilla JavaScript
+- native ES modules
 - Unicode property escapes
+
+## Verification stack
+
 - Node.js built-in test runner
+- Playwright 1.63.0
+- @axe-core/playwright 4.13.0
 - GitHub Actions
+- Dependabot
 
-There is intentionally no React, validation library, state-management package, CSS framework or build pipeline.
-
-For four fields and one local interaction flow, those tools would increase surface area without solving a product requirement.
+Playwright and axe are test-only tooling. The shipped application still has zero runtime dependencies.
 
 ## Architecture
 
-```text
-index.html
-    |
-    v
-script.js -------------------- browser / DOM adapter
-    |
-    v
-src/validation.js ------------ pure validation domain
-```
+    index.html / style.css
+              ↑
+              |
+          script.js
+     browser adapter +
+     interaction state
+              |
+              ↓
+     src/validation.js
+      pure domain rules
 
-The important dependency rule is simple:
+The key dependency rule is:
 
-> validation rules do not know that a browser exists.
+> **Validation rules do not know that a browser exists.**
 
-`src/validation.js` has no access to `window`, `document`, form elements, CSS classes or storage. That makes the behavior deterministic, portable and easy to test.
+The validation module has no access to window, document, form elements, CSS classes, storage, or the network.
 
-`script.js` owns the browser-specific work:
+The browser adapter owns only:
 
-- reading form values
-- tracking touched fields
-- deciding when to display feedback
-- synchronizing `aria-invalid`
-- updating the strength meter
-- handling password visibility
-- moving focus after an invalid submit
-- switching to the success state
+- required element discovery
+- form value extraction
+- touched-field state
+- event handling
+- accessibility attributes
+- focus management
+- password visibility
+- success and reset transitions
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for trade-offs and design decisions.
+All required DOM references are resolved **before** custom validation disables native browser validation. If enhanced mode cannot bootstrap, the HTML keeps its native constraints instead of failing into a partially enhanced state.
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the design rationale.
 
 ## Validation policy
 
 ### Username
 
 - required
-- 3–20 Unicode characters
-- letters, numbers, dots, hyphens and underscores
+- 3–20 normalized Unicode characters
+- letters, combining marks, numbers, dots, hyphens and underscores
+- NFKC compatibility normalization before validation
 
 ### Email
 
 - required
-- maximum 254 characters
-- pragmatic `local@domain.tld` shape validation
+- maximum 254 normalized characters
+- pragmatic local@domain.tld shape validation
 
-The browser/client cannot prove that an address exists. A real registration system would confirm ownership server-side.
+A client cannot prove that an email exists. Ownership verification belongs on the server.
 
 ### Password
 
@@ -107,118 +136,104 @@ The browser/client cannot prove that an address exists. A real registration syst
 - at least one Unicode letter
 - at least one number
 - no whitespace
-- cannot contain the username
-- cannot contain the local part of the email
+- cannot contain the normalized username
+- cannot contain the normalized local part of the email
 
-The strength indicator is guidance only; it is deliberately separate from the pass/fail validation contract.
+The password value itself is not rewritten or stored. Normalization is used only for identity comparisons.
 
-### Confirmation
+### Password strength
 
-- required
-- must match the password exactly
+Strength is advisory and deliberately separate from validity. The live announcement updates only when the strength category changes, reducing screen-reader noise.
 
-## Accessibility strategy
+## Accessibility model
 
-The enhanced form avoids showing errors before the user has interacted with a field.
+Untouched fields stay quiet. After blur, a field becomes touched and receives feedback while the user corrects it.
 
-After a field is blurred, it becomes **touched**. From that point onward, feedback updates during correction. On submit, every field is validated and focus moves to the first invalid control.
+The interface includes:
 
-Each input has:
+- programmatic labels
+- contextual descriptions
+- dedicated live error regions
+- synchronized aria-invalid state
+- aria-atomic for complete feedback
+- visible keyboard focus
+- first-error focus recovery
+- focus transfer to success confirmation
+- skip navigation
+- reduced-motion support
+- responsive touch targets
+- automated axe checks across multiple product states
 
-- a programmatic `label`
-- contextual hint text where useful
-- a dedicated live error region
-- synchronized `aria-invalid`
-- a visible `:focus-visible` state
-- appropriate `autocomplete` and input semantics
-
-The page also includes skip navigation and a reduced-motion mode.
+Automated accessibility checks do not replace manual assistive-technology testing, but they make common regressions much harder to merge unnoticed.
 
 ## Progressive enhancement
 
-The HTML contains native `required`, length and input-type constraints.
+Native HTML required, length, type, autocomplete, and input semantics remain in the document.
 
-JavaScript sets `form.noValidate = true` only after the enhanced validator has loaded successfully. If JavaScript is unavailable, the browser's native constraint validation remains available instead of leaving an unprotected form.
+JavaScript enables custom validation only after every required interface element has been verified.
+
+If the enhanced layer cannot initialize, native browser validation remains available.
 
 ## Security boundary
 
-Client-side validation improves UX; it is **not** a security boundary.
+Client-side validation is UX, **not security**.
 
-A production backend must independently validate and normalize every submitted value, rate-limit abusive requests, protect credentials, and own account creation. This demo intentionally performs no network request and stores no personal data.
+A production backend would still own request validation, normalization, duplicate-account handling, secure password hashing, email verification, authentication/session protections, rate limiting, and observability.
 
-## Tests
-
-Run the complete quality gate:
-
-```bash
-npm ci
-npm run check
-```
-
-The test suite covers:
-
-- international usernames
-- empty/short/unsupported usernames
-- valid and invalid email shapes
-- password length/composition rules
-- rejection of profile data inside passwords
-- exact password confirmation
-- complete invalid registration payloads
-- complete valid registration payloads
-- deterministic password-strength scoring
-
-The structural checker additionally verifies important repository invariants such as semantic markup, accessibility wiring, reduced-motion support and separation of DOM access from the validation domain.
+This demo makes no network request and stores no submitted values.
 
 ## Run locally
 
-Because the project uses native ES modules, serve it over HTTP:
+Serve the repository over HTTP:
 
-```bash
-python -m http.server 8000
-```
+    python3 -m http.server 8000
 
-Then open:
+Then open http://localhost:8000.
 
-```text
-http://localhost:8000
-```
+No runtime dependency installation is required.
 
-No application installation is required to run the UI.
+## Run static quality checks
+
+    npm ci
+    npm run check
+
+This executes syntax checks, unit/boundary tests, and structural architecture/accessibility/presentation invariants.
+
+## Run browser and accessibility tests
+
+Install the pinned test-only tools and browser engines:
+
+    npm run test:e2e:deps
+    npx playwright install chromium firefox
+    npm run test:e2e
+
+The browser suite verifies touched-field timing, recovery, focus behavior, dependent password rules, password visibility, success/reset flows, responsive presentation, and automated axe scans.
 
 ## Project structure
 
-```text
-.
-├── .github/
-│   └── workflows/
-│       └── quality.yml
-├── scripts/
-│   └── check-project.mjs
-├── src/
-│   └── validation.js
-├── tests/
-│   └── validation.test.js
-├── ARCHITECTURE.md
-├── index.html
-├── package-lock.json
-├── package.json
-├── script.js
-├── style.css
-└── README.md
-```
+    .
+    ├── .github/
+    │   ├── dependabot.yml
+    │   └── workflows/quality.yml
+    ├── e2e/formguard.spec.js
+    ├── scripts/check-project.mjs
+    ├── src/validation.js
+    ├── tests/validation.test.js
+    ├── ARCHITECTURE.md
+    ├── LICENSE
+    ├── index.html
+    ├── package-lock.json
+    ├── package.json
+    ├── playwright.config.js
+    ├── script.js
+    └── style.css
 
-## Evolution
+## Engineering trade-off
 
-The original learning exercise placed required checks, length checks, email parsing, password matching and DOM styling in one global script.
+React, a form library, schema library, state library, and CSS framework could all solve this problem.
 
-The current version preserves the small Vanilla JavaScript stack while improving the parts that matter in real product work:
+They would also increase maintenance surface without adding product value for four fields and one local interaction flow.
 
-- correctness
-- interaction timing
-- accessibility
-- testability
-- architectural boundaries
-- documentation
-- automated verification
+For the current scope, native browser APIs plus a pure domain module provide the highest signal-to-complexity ratio.
 
-That is the point of this repository: **more engineering value without unnecessary engineering weight.**
+**More engineering value, not more engineering weight.**
