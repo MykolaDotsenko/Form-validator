@@ -81,7 +81,7 @@ test("password visibility control updates both password fields", async ({
 }) => {
   const password = page.getByLabel("Password", { exact: true });
   const confirmation = page.getByLabel("Confirm password");
-  const toggle = page.getByRole("button", { name: "Show passwords" });
+  const toggle = page.locator("#password-toggle");
 
   await expect(password).toHaveAttribute("type", "password");
   await expect(confirmation).toHaveAttribute("type", "password");
