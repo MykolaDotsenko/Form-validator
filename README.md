@@ -54,6 +54,7 @@ Nothing is transmitted, stored, tracked, or persisted.
 | Desktop | Chromium + Firefox |
 | Mobile | Chromium mobile emulation |
 | Accessibility | axe analysis of initial, invalid and success states |
+| Performance/SEO | Lighthouse CI quality budgets |
 | CI | separate static and browser jobs |
 | Supply chain | zero runtime packages; pinned test tooling |
 | Deployment | GitHub Pages |
@@ -73,6 +74,7 @@ Browser failures retain Playwright traces, screenshots, and video where applicab
 - Node.js built-in test runner
 - Playwright 1.63.0
 - @axe-core/playwright 4.13.0
+- Lighthouse CI 0.15.1
 - GitHub Actions
 - Dependabot
 
@@ -209,6 +211,8 @@ Install the pinned test-only tools and browser engines:
 
 The browser suite verifies touched-field timing, recovery, focus behavior, dependent password rules, password visibility, success/reset flows, responsive presentation, and automated axe scans.
 
+Lighthouse CI also enforces portfolio quality budgets for performance, accessibility, best practices, and SEO.
+
 ## Project structure
 
     .
@@ -225,6 +229,7 @@ The browser suite verifies touched-field timing, recovery, focus behavior, depen
     ├── package-lock.json
     ├── package.json
     ├── playwright.config.js
+    ├── lighthouserc.cjs
     ├── script.js
     └── style.css
 
