@@ -7,6 +7,7 @@ const files = {
   css: await readFile("style.css", "utf8"),
   e2e: await readFile("e2e/formguard.spec.js", "utf8"),
   playwright: await readFile("playwright.config.js", "utf8"),
+  lighthouse: await readFile("lighthouserc.cjs", "utf8"),
 };
 
 const packageJson = JSON.parse(await readFile("package.json", "utf8"));
@@ -34,6 +35,7 @@ const checks = [
   ["pinned browser tool bootstrap", /@playwright\/test@1\.63\.0/u.test(packageJson.scripts["test:e2e:deps"] ?? "")],
   ["cross-browser matrix", /chromium-desktop/u.test(files.playwright) && /firefox-desktop/u.test(files.playwright) && /chromium-mobile/u.test(files.playwright)],
   ["automated axe scan", /AxeBuilder/u.test(files.e2e)],
+  ["Lighthouse budgets", /categories:performance/u.test(files.lighthouse) && /categories:seo/u.test(files.lighthouse)],
 ];
 
 const failed = checks.filter(([, passed]) => !passed);
