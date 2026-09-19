@@ -65,6 +65,9 @@ jobs:
       - name: Run cross-browser product and WCAG checks
         run: npm run test:e2e
 
+      - name: Run Lighthouse quality budgets
+        run: npm run test:lighthouse
+
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -73,5 +76,6 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            .lighthouseci/
           if-no-files-found: ignore
           retention-days: 14
