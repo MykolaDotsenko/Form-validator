@@ -1,48 +1,211 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link rel="stylesheet" href="style.css" />
-    <title>Rekisteröidy meihin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="FormGuard is an accessible, dependency-free registration form that demonstrates production-minded client-side validation."
+    />
+    <meta name="theme-color" content="#111827" />
+    <meta name="color-scheme" content="light" />
+    <title>FormGuard — Accessible validation</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="container">
-      <form id="form" class="form">
-        <h2>Rekisteröidy meihin</h2>
-        <div class="form-control">
-          <label for="username">Käyttäjänimi</label>
-          <input type="text" id="username" placeholder="Syötä käyttäjätunnus" />
-          <small>Error message</small>
-        </div>
-        <div class="form-control">
-          <label for="email">Sähköposti</label>
-          <input type="text" id="email" placeholder="Syötä sähköposti" />
-          <small>Error message</small>
-        </div>
-        <div class="form-control">
-          <label for="password">Salasana</label>
-          <input
-            type="password"
-            id="password"
-            placeholder="Kirjoita salasana"
-          />
-          <small>Error message</small>
-        </div>
-        <div class="form-control">
-          <label for="password2">Vahvista salasana</label>
-          <input
-            type="password"
-            id="password2"
-            placeholder="Kirjoita salasana uudelleen"
-          />
-          <small>Error message</small>
-        </div>
-        <button type="submit">Lähetä</button>
-      </form>
-    </div>
+    <a class="skip-link" href="#registration-form">Skip to registration form</a>
 
-    <script src="script.js"></script>
+    <main class="app-shell">
+      <section class="story-panel" aria-labelledby="page-title">
+        <div class="brand" aria-label="FormGuard">
+          <span class="brand-mark" aria-hidden="true">FG</span>
+          <span>FormGuard</span>
+        </div>
+
+        <div class="story-copy">
+          <p class="eyebrow">Validation without friction</p>
+          <h1 id="page-title">Helpful feedback before frustration.</h1>
+          <p class="lede">
+            A focused registration flow built to demonstrate resilient validation,
+            accessible interaction states, and proportional frontend architecture.
+          </p>
+        </div>
+
+        <div class="proof-grid" aria-label="Engineering highlights">
+          <article class="proof-card">
+            <strong>0</strong>
+            <span>runtime dependencies</span>
+          </article>
+          <article class="proof-card">
+            <strong>4</strong>
+            <span>independent field rules</span>
+          </article>
+          <article class="proof-card">
+            <strong>A11y</strong>
+            <span>keyboard + screen reader aware</span>
+          </article>
+        </div>
+
+        <p class="engineering-note">
+          The browser handles interaction. Pure JavaScript handles domain rules.
+          The server would remain the security boundary in a real product.
+        </p>
+      </section>
+
+      <section class="form-panel" aria-labelledby="form-title">
+        <div class="form-card">
+          <header class="form-header">
+            <p class="eyebrow">Create your demo account</p>
+            <h2 id="form-title">Start with the essentials</h2>
+            <p>Nothing is sent or stored. This form is an interaction demo.</p>
+          </header>
+
+          <div
+            id="form-summary"
+            class="form-summary"
+            role="alert"
+            aria-live="assertive"
+            hidden
+          ></div>
+
+          <form id="registration-form" class="registration-form" action="#" method="post">
+            <div class="field" data-field="username">
+              <div class="label-row">
+                <label for="username">Username</label>
+                <span class="field-meta">3–20 characters</span>
+              </div>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autocomplete="username"
+                inputmode="text"
+                required
+                minlength="3"
+                maxlength="20"
+                aria-describedby="username-hint username-error"
+                placeholder="e.g. mykola.dev"
+              />
+              <p id="username-hint" class="field-hint">
+                Letters, numbers, dots, hyphens and underscores.
+              </p>
+              <p id="username-error" class="field-error" aria-live="polite"></p>
+            </div>
+
+            <div class="field" data-field="email">
+              <div class="label-row">
+                <label for="email">Email</label>
+                <span class="field-meta">Work or personal</span>
+              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+                required
+                maxlength="254"
+                aria-describedby="email-hint email-error"
+                placeholder="you@example.com"
+              />
+              <p id="email-hint" class="field-hint">
+                Used only to demonstrate email validation.
+              </p>
+              <p id="email-error" class="field-error" aria-live="polite"></p>
+            </div>
+
+            <div class="field" data-field="password">
+              <div class="label-row">
+                <label for="password">Password</label>
+                <button
+                  class="text-button"
+                  type="button"
+                  id="password-toggle"
+                  aria-controls="password password-confirmation"
+                  aria-pressed="false"
+                >
+                  Show passwords
+                </button>
+              </div>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="10"
+                maxlength="64"
+                aria-describedby="password-hint password-strength-label password-error"
+                placeholder="At least 10 characters"
+              />
+              <p id="password-hint" class="field-hint">
+                Use 10–64 characters with at least one letter and one number.
+              </p>
+
+              <div class="strength" aria-hidden="true">
+                <span data-strength-segment></span>
+                <span data-strength-segment></span>
+                <span data-strength-segment></span>
+                <span data-strength-segment></span>
+              </div>
+              <p id="password-strength-label" class="strength-label" aria-live="polite">
+                Password strength: not entered
+              </p>
+              <p id="password-error" class="field-error" aria-live="polite"></p>
+            </div>
+
+            <div class="field" data-field="passwordConfirmation">
+              <div class="label-row">
+                <label for="password-confirmation">Confirm password</label>
+                <span class="field-meta">Must match</span>
+              </div>
+              <input
+                id="password-confirmation"
+                name="passwordConfirmation"
+                type="password"
+                autocomplete="new-password"
+                required
+                maxlength="64"
+                aria-describedby="password-confirmation-error"
+                placeholder="Repeat your password"
+              />
+              <p
+                id="password-confirmation-error"
+                class="field-error"
+                aria-live="polite"
+              ></p>
+            </div>
+
+            <button class="primary-button" type="submit">
+              <span>Create account</span>
+              <span aria-hidden="true">→</span>
+            </button>
+
+            <p class="privacy-note">
+              Demo only — the submit action never sends your data anywhere.
+            </p>
+          </form>
+
+          <section id="success-panel" class="success-panel" role="status" hidden>
+            <div class="success-icon" aria-hidden="true">✓</div>
+            <p class="eyebrow">Validation complete</p>
+            <h2>Everything checks out.</h2>
+            <p id="success-message"></p>
+            <button class="secondary-button" type="button" id="start-over">
+              Test another registration
+            </button>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <noscript>
+      <p class="noscript-message">
+        JavaScript is disabled. Native browser constraints still protect the required
+        fields, but the enhanced validation experience is unavailable.
+      </p>
+    </noscript>
+
+    <script type="module" src="./script.js"></script>
   </body>
 </html>
